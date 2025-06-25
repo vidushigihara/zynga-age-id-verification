@@ -20,7 +20,7 @@
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     }
 
-    video, canvas {
+    video, canvas, #idPreview {
       border-radius: 8px;
       border: 1px solid #ccc;
       margin-top: 10px;
@@ -72,11 +72,13 @@
 <body>
   <div class="container">
     <h1>🔐 Age & Identity Verification</h1>
+    <div id="cameraStatus" class="alert alert-warning" style="display: none;"></div>
 
     <form id="verifyForm">
       <div class="mb-3">
         <label for="idCardInput" class="form-label">Upload Aadhar Card Image</label>
         <input type="file" class="form-control" id="idCardInput" accept="image/*" required>
+        <img id="idPreview" src="" alt="Aadhar Preview" style="max-width: 100%; display: none;" />
       </div>
 
       <div class="mb-3">
@@ -84,12 +86,21 @@
         <video id="webcam" width="240" height="180" autoplay muted></video><br>
         <button type="button" id="captureBtn" class="btn btn-secondary">📸 Capture Selfie</button><br>
         <canvas id="selfieCanvas" width="240" height="180" style="display:none;"></canvas>
+
+        <div id="selfiePreviewContainer" style="display:none; margin-top: 15px;">
+          <p>🖼 This is the selfie you captured. Want to take it again?</p>
+          <img id="selfiePreview" src="" alt="Captured Selfie" style="width: 240px; border: 1px solid #ccc; border-radius: 8px;" />
+        </div>
+
+        <div id="selfieQualityWarning" class="alert alert-danger mt-2" style="display: none;">
+          🚫 Selfie looks blurry or poorly lit. Please retake it for better results.
+        </div>
       </div>
 
       <button type="submit" class="btn btn-primary w-100" id="verifyBtn">✅ Verify Identity</button>
     </form>
 
-    <div  id="resultSection" style="display:none;">
+    <div id="resultSection" style="display:none;">
       <h4 class="mt-4">📝 Verification Result</h4>
       <p><strong>Date of Birth:</strong> <span id="dob"></span></p>
       <p><strong>Age:</strong> <span id="age"></span></p>
@@ -98,11 +109,162 @@
     </div>
 
     <div id="allResults" class="mt-5">
-      <h4>🧾 Past Verifications</h4>
+      <h4></h4>
       <div id="resultLog" class="result-log"></div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    let capturedSelfieBlob = null;
+
+    const webcam = document.getElementById("webcam");
+    const canvas = document.getElementById("selfieCanvas");
+    const captureBtn = document.getElementById("captureBtn");
+    const verifyBtn = document.getElementById("verifyBtn");
+    const cameraStatus = document.getElementById("cameraStatus");
+    const idCardInput = document.getElementById("idCardInput");
+    const idPreview = document.getElementById("idPreview");
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        webcam.srcObject = stream;
+        cameraStatus.textContent = "✅ Camera access granted.";
+        cameraStatus.className = "alert alert-success";
+        cameraStatus.style.display = "block";
+      })
+      .catch(error => {
+        cameraStatus.textContent = "🚫 Camera access blocked or not available.";
+        cameraStatus.className = "alert alert-danger";
+        cameraStatus.style.display = "block";
+        console.error(error);
+      });
+
+    idCardInput.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          idPreview.src = e.target.result;
+          idPreview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    captureBtn.addEventListener("click", () => {
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+      canvas.style.display = "block";
+
+      canvas.toBlob(blob => {
+        capturedSelfieBlob = blob;
+
+        const selfieURL = URL.createObjectURL(blob);
+        document.getElementById("selfiePreview").src = selfieURL;
+        document.getElementById("selfiePreviewContainer").style.display = "block";
+
+        checkSelfieQuality();
+
+        alert("📸 Selfie captured! If you're not happy, click 'Capture' again.");
+      }, "image/jpeg");
+    });
+
+    verifyBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const idCard = idCardInput.files[0];
+
+      if (!idCard || !capturedSelfieBlob) {
+        alert("⚠ Please upload Aadhar and capture a selfie first.");
+        return;
+      }
+
+      if (document.getElementById("selfieQualityWarning").style.display === "block") {
+        alert("⚠ Please retake selfie due to poor quality.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("id_card", idCard);
+      formData.append("selfie", capturedSelfieBlob, "selfie.jpg");
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/verify", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+
+        document.getElementById("resultSection").style.display = "none";
+
+        if (result.error) {
+          alert("❌ " + result.error);
+          return;
+        }
+
+        document.getElementById("dob").textContent = result.dob;
+        document.getElementById("age").textContent = result.age + " years";
+        document.getElementById("matchScore").textContent = result.matchScore.toFixed(2) + "%";
+        document.getElementById("status").textContent =
+          result.matchVerified && result.ageVerified
+            ? "✅ Verified"
+            : "❌ Not Verified";
+
+        document.getElementById("resultSection").style.display = "block";
+
+        const logEntry = document.createElement("div");
+        logEntry.className = "result-log-entry";
+        logEntry.innerHTML = `
+          <p><strong>📅 DOB:</strong> ${result.dob}</p>
+          <p><strong>🎂 Age:</strong> ${result.age} years</p>
+          <p><strong>🔍 Match Score:</strong> ${result.matchScore.toFixed(2)}%</p>
+          <p><strong>🧾 Status:</strong> ${result.matchVerified && result.ageVerified ? "✅ Verified" : "❌ Not Verified"}</p>
+          <hr />
+        `;
+        document.getElementById("resultLog").prepend(logEntry);
+
+      } catch (error) {
+        alert("🚫 Server error or Flask app not running.");
+        console.error(error);
+      }
+    });
+
+    function checkSelfieQuality() {
+      const canvasEl = document.getElementById("selfieCanvas");
+      const ctx = canvasEl.getContext("2d");
+      const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+      const pixels = imgData.data;
+
+      let brightnessSum = 0;
+      let varianceSum = 0;
+
+      for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+
+        const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+        brightnessSum += brightness;
+      }
+
+      const avgBrightness = brightnessSum / (pixels.length / 4);
+
+      for (let i = 0; i < pixels.length - 4; i += 4) {
+        const curr = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+        const next = 0.299 * pixels[i + 4] + 0.587 * pixels[i + 5] + 0.114 * pixels[i + 6];
+        const diff = curr - next;
+        varianceSum += diff * diff;
+      }
+
+      const blurScore = varianceSum / (pixels.length / 4);
+      const warningBox = document.getElementById("selfieQualityWarning");
+
+      if (blurScore < 20 || avgBrightness < 50 || avgBrightness > 230) {
+        warningBox.style.display = "block";
+      } else {
+        warningBox.style.display = "none";
+      }
+    }
+  </script>
 </body>
 </html>
