@@ -13,3 +13,8 @@ This project uses OCR and Deep Learning to verify a user's identity and age via:
 - Face matching with DeepFace
 - OCR for DOB extraction using Tesseract
 - Flask backend API
+
+## 🔗 Demo Video & Presentation
+
+- [Watch Demo Video](https://drive.google.com/drive/folders/1qAFNfzA5mK3pmYymh1n5cOBevdIdt97l?usp=drive_link)
+- [View Project PPT](https://drive.google.com/drive/folders/1ZHB-AF_mVzf1Qd0hEXEI-RqEZKFf39uN?usp=sharing)
