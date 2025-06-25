@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔐 Age & Identity Verification</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: #f0f2f5;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    video, canvas {
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+    }
+
+    .btn {
+      margin-top: 10px;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+      color: #007bff;
+    }
+
+    #resultSection {
+      margin-top: 30px;
+      background: #f9f9f9;
+      padding: 20px;
+      border-left: 5px solid #007bff;
+      border-radius: 6px;
+    }
+
+    #allResults {
+      margin-top: 40px;
+    }
+
+    .result-log {
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .result-log-entry {
+      background: #e9f7ef;
+      border-left: 5px solid #28a745;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    .result-log-entry hr {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Age & Identity Verification</h1>
+
+    <form id="verifyForm">
+      <div class="mb-3">
+        <label for="idCardInput" class="form-label">Upload Aadhar Card Image</label>
+        <input type="file" class="form-control" id="idCardInput" accept="image/*" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Live Selfie</label><br>
+        <video id="webcam" width="240" height="180" autoplay muted></video><br>
+        <button type="button" id="captureBtn" class="btn btn-secondary">📸 Capture Selfie</button><br>
+        <canvas id="selfieCanvas" width="240" height="180" style="display:none;"></canvas>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100" id="verifyBtn">✅ Verify Identity</button>
+    </form>
+
+    <div  id="resultSection" style="display:none;">
+      <h4 class="mt-4">📝 Verification Result</h4>
+      <p><strong>Date of Birth:</strong> <span id="dob"></span></p>
+      <p><strong>Age:</strong> <span id="age"></span></p>
+      <p><strong>Match Score:</strong> <span id="matchScore"></span></p>
+      <p><strong>Status:</strong> <span id="status"></span></p>
+    </div>
+
+    <div id="allResults" class="mt-5">
+      <h4>🧾 Past Verifications</h4>
+      <div id="resultLog" class="result-log"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
