@@ -71,7 +71,7 @@
 </head>
 <body>
   <div class="container">
-    <h1> AGE AND IDENTITY VERIFICATION SYSTEM</h1>
+    <h1>AGE AND IDENTITY VERIFICATION SYSTEM</h1>
     <div id="cameraStatus" class="alert alert-warning" style="display: none;"></div>
 
     <form id="verifyForm">
@@ -97,7 +97,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100" id="verifyBtn"> Verify Identity</button>
+      <button type="submit" class="btn btn-primary w-100" id="verifyBtn">Verify Identity</button>
     </form>
 
     <div id="resultSection" style="display:none;">
@@ -159,15 +159,79 @@
         const selfieURL = URL.createObjectURL(blob);
         document.getElementById("selfiePreview").src = selfieURL;
         document.getElementById("selfiePreviewContainer").style.display = "block";
-        document.getElementById("selfieQualityWarning").style.display = "none";
+        checkSelfieQuality();
       }, "image/jpeg");
     });
+
+    function checkSelfieQuality() {
+      const ctx = canvas.getContext("2d");
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imgData.data;
+      let brightnessSum = 0;
+      let varianceSum = 0;
+
+      for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+        brightnessSum += brightness;
+      }
+
+      const avgBrightness = brightnessSum / (pixels.length / 4);
+
+      for (let i = 0; i < pixels.length - 4; i += 4) {
+        const curr = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+        const next = 0.299 * pixels[i + 4] + 0.587 * pixels[i + 5] + 0.114 * pixels[i + 6];
+        const diff = curr - next;
+        varianceSum += diff * diff;
+      }
+
+      const blurScore = varianceSum / (pixels.length / 4);
+      const warningBox = document.getElementById("selfieQualityWarning");
+
+      if (blurScore < 15 || avgBrightness < 50 || avgBrightness > 240) {
+        warningBox.style.display = "block";
+      } else {
+        warningBox.style.display = "none";
+      }
+    }
 
     verifyBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       const idCard = idCardInput.files[0];
       if (!idCard || !capturedSelfieBlob) {
         alert("⚠ Please upload Aadhar and capture a selfie first.");
+        return;
+      }
+
+      const ctx = canvas.getContext("2d");
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imgData.data;
+      let brightnessSum = 0;
+      let varianceSum = 0;
+
+      for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+        brightnessSum += brightness;
+      }
+
+      const avgBrightness = brightnessSum / (pixels.length / 4);
+
+      for (let i = 0; i < pixels.length - 4; i += 4) {
+        const curr = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+        const next = 0.299 * pixels[i + 4] + 0.587 * pixels[i + 5] + 0.114 * pixels[i + 6];
+        const diff = curr - next;
+        varianceSum += diff * diff;
+      }
+
+      const blurScore = varianceSum / (pixels.length / 4);
+
+      if (blurScore < 15 || avgBrightness < 50 || avgBrightness > 240) {
+        alert("🚫 Selfie quality is too poor. Please retake the selfie.");
         return;
       }
 
@@ -201,7 +265,7 @@
         document.getElementById("resultLog").prepend(logEntry);
 
       } catch (error) {
-        alert("🚫 Server error ");
+        alert("🚫 Server error");
         console.error(error);
       }
     });
