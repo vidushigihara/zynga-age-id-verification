@@ -186,7 +186,7 @@
         document.getElementById("dob").textContent = result.dob;
         document.getElementById("age").textContent = result.age + " years";
         document.getElementById("matchScore").textContent = result.matchScore.toFixed(2) + "%";
-        document.getElementById("status").textContent = result.matchVerified && result.ageVerified ? "✅ Verified" : "❌ Not Verified";
+        document.getElementById("status").textContent = result.matchVerified && result.ageVerified ? "✅ Verified-SAME PERSON IN BOTH ID AND SELFIE" : "❌ Not Verified: DIFFERENT PERSON IN ID AND SELFIE";
         document.getElementById("resultSection").style.display = "block";
 
         const logEntry = document.createElement("div");
@@ -195,7 +195,7 @@
           <p><strong>📅 DOB:</strong> ${result.dob}</p>
           <p><strong>🎂 Age:</strong> ${result.age} years</p>
           <p><strong>🔍 Match Score:</strong> ${result.matchScore.toFixed(2)}%</p>
-          <p><strong>🧾 Status:</strong> ${result.matchVerified && result.ageVerified ? "✅ Verified" : "❌ Not Verified"}</p>
+          <p><strong>🧾 Status:</strong> ${result.matchVerified && result.ageVerified ? "✅ Verified-SAME PERSON IN BOTH ID AND SELFIE" : "❌ Not Verified: DIFFERENT PERSON IN ID AND SELFIE"}</p>
           <hr />
         `;
         document.getElementById("resultLog").prepend(logEntry);
