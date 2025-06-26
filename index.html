@@ -55,8 +55,8 @@
     }
 
     .result-log-entry {
-      background: #e9f7ef;
-      border-left: 5px solid #28a745;
+      background: #a5f2ff;
+      border-left: 5px solid #0066ff;
       padding: 15px;
       margin-bottom: 12px;
       border-radius: 6px;
@@ -71,12 +71,12 @@
 </head>
 <body>
   <div class="container">
-    <h1>🔐 Age & Identity Verification</h1>
+    <h1> AGE AND IDENTITY VERIFICATION SYSTEM</h1>
     <div id="cameraStatus" class="alert alert-warning" style="display: none;"></div>
 
     <form id="verifyForm">
       <div class="mb-3">
-        <label for="idCardInput" class="form-label">Upload Aadhar Card Image</label>
+        <label for="idCardInput" class="form-label">Please Upload Aadhar Card Image</label>
         <input type="file" class="form-control" id="idCardInput" accept="image/*,.pdf" required>
         <img id="idPreview" src="" alt="Aadhar Preview" style="max-width: 100%; display: none;" />
       </div>
@@ -97,7 +97,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100" id="verifyBtn">✅ Verify Identity</button>
+      <button type="submit" class="btn btn-primary w-100" id="verifyBtn"> Verify Identity</button>
     </form>
 
     <div id="resultSection" style="display:none;">
@@ -186,22 +186,22 @@
         document.getElementById("dob").textContent = result.dob;
         document.getElementById("age").textContent = result.age + " years";
         document.getElementById("matchScore").textContent = result.matchScore.toFixed(2) + "%";
-        document.getElementById("status").textContent = result.matchVerified && result.ageVerified ? "✅ Verified-SAME PERSON IN BOTH ID AND SELFIE" : "❌ Not Verified: DIFFERENT PERSON IN ID AND SELFIE";
+        document.getElementById("status").textContent = result.matchVerified && result.ageVerified ? "✅ Verified" : "❌ Not Verified";
         document.getElementById("resultSection").style.display = "block";
 
         const logEntry = document.createElement("div");
         logEntry.className = "result-log-entry";
         logEntry.innerHTML = `
-          <p><strong>📅 DOB:</strong> ${result.dob}</p>
-          <p><strong>🎂 Age:</strong> ${result.age} years</p>
-          <p><strong>🔍 Match Score:</strong> ${result.matchScore.toFixed(2)}%</p>
-          <p><strong>🧾 Status:</strong> ${result.matchVerified && result.ageVerified ? "✅ Verified-SAME PERSON IN BOTH ID AND SELFIE" : "❌ Not Verified: DIFFERENT PERSON IN ID AND SELFIE"}</p>
+          <p><strong> DOB:</strong> ${result.dob}</p>
+          <p><strong> Age:</strong> ${result.age} years</p>
+          <p><strong> Match Score:</strong> ${result.matchScore.toFixed(2)}%</p>
+          <p><strong> Status:</strong> ${result.matchVerified && result.ageVerified ? "✅ Verified" : "❌ Not Verified"}</p>
           <hr />
         `;
         document.getElementById("resultLog").prepend(logEntry);
 
       } catch (error) {
-        alert("🚫 Server error or Flask app not running.");
+        alert("🚫 Server error ");
         console.error(error);
       }
     });
