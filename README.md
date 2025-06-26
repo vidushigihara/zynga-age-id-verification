@@ -1,6 +1,6 @@
 # zynga-age-id-verification
 Age &amp; Identity Verification System
-# AI Age & Identity Verification System
+# Age & Identity Verification System
 This project uses OCR and Deep Learning to verify a user's identity and age via:
 
 -  Aadhar card upload
