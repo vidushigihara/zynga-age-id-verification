@@ -21,9 +21,33 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 def extract_dob_from_image(image_path):
     image = cv2.imread(image_path)
-    text = pytesseract.image_to_string(image)
-    dob_patterns = [r'\d{2}/\d{2}/\d{4}', r'\d{2}-\d{2}-\d{4}']
-    for pattern in dob_patterns:
+    
+    # Use English + multiple Indian languages
+    text = pytesseract.image_to_string(image, lang='eng+hin+ben+tam+tel+kan+guj+mar')
+    
+    # Normalize Hindi/Indic phrases (e.g. "जन्म तिथि") to match patterns
+    dob_keywords = [
+        r'जन्म[ \t]*तिथि[:\-]*[ \t]*(\d{2}[\/\-]\d{2}[\/\-]\d{4})',
+        r'Date of Birth[:\-]*[ \t]*(\d{2}[\/\-]\d{2}[\/\-]\d{4})',
+        r'DOB[:\-]*[ \t]*(\d{2}[\/\-]\d{2}[\/\-]\d{4})'
+    ]
+    
+    # Try keyword-specific regex
+    for pattern in dob_keywords:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            dob_str = match.group(1)
+            try:
+                return datetime.strptime(dob_str, "%d/%m/%Y").date()
+            except:
+                try:
+                    return datetime.strptime(dob_str, "%d-%m-%Y").date()
+                except:
+                    continue
+    
+    # Fallback: match any date-like pattern
+    general_patterns = [r'\d{2}[\/\-]\d{2}[\/\-]\d{4}']
+    for pattern in general_patterns:
         matches = re.findall(pattern, text)
         for dob in matches:
             try:
@@ -33,6 +57,7 @@ def extract_dob_from_image(image_path):
                     return datetime.strptime(dob, "%d-%m-%Y").date()
                 except:
                     continue
+
     return None
 
 def calculate_age(dob):
