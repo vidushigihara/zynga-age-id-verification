@@ -77,7 +77,7 @@
     <form id="verifyForm">
       <div class="mb-3">
         <label for="idCardInput" class="form-label">Upload Aadhar Card Image</label>
-        <input type="file" class="form-control" id="idCardInput" accept="image/*" required>
+        <input type="file" class="form-control" id="idCardInput" accept="image/*,.pdf" required>
         <img id="idPreview" src="" alt="Aadhar Preview" style="max-width: 100%; display: none;" />
       </div>
 
@@ -141,7 +141,7 @@
 
     idCardInput.addEventListener("change", (event) => {
       const file = event.target.files[0];
-      if (file) {
+      if (file && file.type.startsWith("image")) {
         const reader = new FileReader();
         reader.onload = (e) => {
           idPreview.src = e.target.result;
@@ -154,32 +154,20 @@
     captureBtn.addEventListener("click", () => {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
-      canvas.style.display = "block";
-
       canvas.toBlob(blob => {
         capturedSelfieBlob = blob;
-
         const selfieURL = URL.createObjectURL(blob);
         document.getElementById("selfiePreview").src = selfieURL;
         document.getElementById("selfiePreviewContainer").style.display = "block";
-
-        checkSelfieQuality();
-
-        alert("📸 Selfie captured! If you're not happy, click 'Capture' again.");
+        document.getElementById("selfieQualityWarning").style.display = "none";
       }, "image/jpeg");
     });
 
     verifyBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       const idCard = idCardInput.files[0];
-
       if (!idCard || !capturedSelfieBlob) {
         alert("⚠ Please upload Aadhar and capture a selfie first.");
-        return;
-      }
-
-      if (document.getElementById("selfieQualityWarning").style.display === "block") {
-        alert("⚠ Please retake selfie due to poor quality.");
         return;
       }
 
@@ -195,21 +183,10 @@
 
         const result = await response.json();
 
-        document.getElementById("resultSection").style.display = "none";
-
-        if (result.error) {
-          alert("❌ " + result.error);
-          return;
-        }
-
         document.getElementById("dob").textContent = result.dob;
         document.getElementById("age").textContent = result.age + " years";
         document.getElementById("matchScore").textContent = result.matchScore.toFixed(2) + "%";
-        document.getElementById("status").textContent =
-          result.matchVerified && result.ageVerified
-            ? "✅ Verified"
-            : "❌ Not Verified";
-
+        document.getElementById("status").textContent = result.matchVerified && result.ageVerified ? "✅ Verified" : "❌ Not Verified";
         document.getElementById("resultSection").style.display = "block";
 
         const logEntry = document.createElement("div");
@@ -228,43 +205,6 @@
         console.error(error);
       }
     });
-
-    function checkSelfieQuality() {
-      const canvasEl = document.getElementById("selfieCanvas");
-      const ctx = canvasEl.getContext("2d");
-      const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
-      const pixels = imgData.data;
-
-      let brightnessSum = 0;
-      let varianceSum = 0;
-
-      for (let i = 0; i < pixels.length; i += 4) {
-        const r = pixels[i];
-        const g = pixels[i + 1];
-        const b = pixels[i + 2];
-
-        const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-        brightnessSum += brightness;
-      }
-
-      const avgBrightness = brightnessSum / (pixels.length / 4);
-
-      for (let i = 0; i < pixels.length - 4; i += 4) {
-        const curr = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
-        const next = 0.299 * pixels[i + 4] + 0.587 * pixels[i + 5] + 0.114 * pixels[i + 6];
-        const diff = curr - next;
-        varianceSum += diff * diff;
-      }
-
-      const blurScore = varianceSum / (pixels.length / 4);
-      const warningBox = document.getElementById("selfieQualityWarning");
-
-      if (blurScore < 20 || avgBrightness < 50 || avgBrightness > 230) {
-        warningBox.style.display = "block";
-      } else {
-        warningBox.style.display = "none";
-      }
-    }
   </script>
 </body>
 </html>
