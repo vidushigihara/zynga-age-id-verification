@@ -11,7 +11,7 @@ It uses DeepFace for face recognition and Tesseract OCR for extracting and verif
 ## Features
 - Live selfie capture using webcam
 
--Upload Aadhar card image (JPG/PNG)
+- Upload Aadhar card image (JPG/PNG)
 
 - Face match using DeepFace
 
@@ -21,7 +21,7 @@ It uses DeepFace for face recognition and Tesseract OCR for extracting and verif
 
 - Log of past verifications
 
--⚠ Blurry selfie detection
+- Blurry selfie detection
 
 
 ##  Demo Video & Presentation
