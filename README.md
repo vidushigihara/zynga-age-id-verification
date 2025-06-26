@@ -26,5 +26,5 @@ It uses DeepFace for face recognition and Tesseract OCR for extracting and verif
 
 ##  Demo Video & Presentation
 
-- [Watch Demo Video](https://drive.google.com/drive/folders/1qAFNfzA5mK3pmYymh1n5cOBevdIdt97l?usp=drive_link)
+- [Watch Demo Video](https://drive.google.com/drive/folders/1eQ2LVCdxZasytVYeAP35yCWIfVv6GFIb?usp=sharing)
 - [View Project PPT](https://drive.google.com/drive/folders/1ZHB-AF_mVzf1Qd0hEXEI-RqEZKFf39uN?usp=sharing)
